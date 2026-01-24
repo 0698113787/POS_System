@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Report - Zakes Shisanyama</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='daily.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="brand">
+                <i class="fas fa-fire-flame-curved flame-icon"></i>
+                <div>
+                    <h1>ZAKES SHISANYAMA</h1>
+                    <span class="role-badge">Daily Report</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <i class="fas fa-user-shield user-icon"></i>
+                    <div>
+                        <div class="user-name">{{ session.username }}</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Date Selector -->
+        <div class="date-selector">
+            <h2><i class="fas fa-calendar-day"></i> Select Date</h2>
+            <input type="date" id="dateInput" value="">
+            <button onclick="loadDailyReport()" class="load-btn">
+                <i class="fas fa-sync-alt"></i> Load Report
+            </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card revenue">
+                <div class="card-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-label">Total Revenue</div>
+                    <div class="card-value" id="totalRevenue">R0.00</div>
+                </div>
+            </div>
+
+            <div class="summary-card orders">
+                <div class="card-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-label">Total Orders</div>
+                    <div class="card-value" id="totalOrders">0</div>
+                </div>
+            </div>
+
+            <div class="summary-card cash">
+                <div class="card-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-label">Cash Payments</div>
+                    <div class="card-value" id="cashRevenue">R0.00</div>
+                    <div class="card-subtext" id="cashOrders">0 orders</div>
+                </div>
+            </div>
+
+            <div class="summary-card card">
+                <div class="card-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-label">Card Payments</div>
+                    <div class="card-value" id="cardRevenue">R0.00</div>
+                    <div class="card-subtext" id="cardOrders">0 orders</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-row">
+            <!-- Payment Method Chart -->
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-pie"></i> Payment Methods Breakdown</h3>
+                <canvas id="paymentChart"></canvas>
+            </div>
+
+            <!-- Hourly Revenue Chart -->
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-line"></i> Hourly Revenue</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-section">
+            <h3><i class="fas fa-list"></i> All Orders for Selected Date</h3>
+            <div class="table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Time</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Payment</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="7" class="no-data">No orders for this date</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Items Section -->
+        <div class="top-items-section">
+            <h3><i class="fas fa-trophy"></i> Top Selling Items</h3>
+            <div class="items-grid" id="topItems">
+                <div class="no-data">No data available</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let paymentChart, hourlyChart;
+
+        // Set today's date as default
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        // Load report on page load
+        window.addEventListener('load', loadDailyReport);
+
+        async function loadDailyReport() {
+            const selectedDate = document.getElementById('dateInput').value;
+            
+            if (!selectedDate) {
+                alert('Please select a date');
+                return;
+            }
+
+            try {
+                // Fetch daily data
+                const response = await fetch(`/api/analytics/daily-report?date=${selectedDate}`);
+                const data = await response.json();
+
+                // Update summary cards
+                updateSummaryCards(data);
+
+                // Update charts
+                updatePaymentChart(data.paymentStats || []);
+                updateHourlyChart(data.hourlyRevenue || []);
+
+                // Update orders table
+                updateOrdersTable(data.orders || []);
+
+                // Update top items
+                updateTopItems(data.topItems || []);
+
+            } catch (error) {
+                console.error('Error loading daily report:', error);
+                alert('Failed to load report');
+            }
+        }
+
+        function updateSummaryCards(data) {
+            document.getElementById('totalRevenue').textContent = `R${(data.totalRevenue || 0).toFixed(2)}`;
+            document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+
+            let cashRev = 0, cashCount = 0, cardRev = 0, cardCount = 0;
+            
+            (data.paymentStats || []).forEach(stat => {
+                if (stat.payment_method === 'cash') {
+                    cashRev = stat.total_revenue;
+                    cashCount = stat.order_count;
+                } else if (stat.payment_method === 'card') {
+                    cardRev = stat.total_revenue;
+                    cardCount = stat.order_count;
+                }
+            });
+
+            document.getElementById('cashRevenue').textContent = `R${cashRev.toFixed(2)}`;
+            document.getElementById('cashOrders').textContent = `${cashCount} orders`;
+            document.getElementById('cardRevenue').textContent = `R${cardRev.toFixed(2)}`;
+            document.getElementById('cardOrders').textContent = `${cardCount} orders`;
+        }
+
+        function updatePaymentChart(paymentStats) {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            
+            if (paymentChart) {
+                paymentChart.destroy();
+            }
+
+            const cashData = paymentStats.find(s => s.payment_method === 'cash');
+            const cardData = paymentStats.find(s => s.payment_method === 'card');
+
+            paymentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash', 'Card'],
+                    datasets: [{
+                        data: [
+                            cashData ? cashData.total_revenue : 0,
+                            cardData ? cardData.total_revenue : 0
+                        ],
+                        backgroundColor: ['#4CAF50', '#2196F3'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHourlyChart(hourlyData) {
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+            
+            if (hourlyChart) {
+                hourlyChart.destroy();
+            }
+
+            hourlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hourlyData.map(h => `${h.hour}:00`),
+                    datasets: [{
+                        label: 'Revenue (R)',
+                        data: hourlyData.map(h => h.revenue),
+                        backgroundColor: '#FF6B35',
+                        borderColor: '#FF4500',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateOrdersTable(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-data">No orders for this date</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td><strong>#${order.id}</strong></td>
+                    <td>${new Date(order.timestamp).toLocaleTimeString()}</td>
+                    <td>${order.customer_name}</td>
+                    <td>${order.items_count} items</td>
+                    <td>
+                        <span class="payment-badge ${order.payment_method}">
+                            <i class="fas fa-${order.payment_method === 'cash' ? 'money-bill-wave' : 'credit-card'}"></i>
+                            ${order.payment_method}
+                        </span>
+                    </td>
+                    <td class="amount">R${order.total.toFixed(2)}</td>
+                    <td>
+                        <span class="status-badge ${order.status}">
+                            ${order.status === 'ready' ? 'Ready' : 'Pending'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTopItems(items) {
+            const container = document.getElementById('topItems');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="no-data">No data available</div>';
+                return;
+            }
+
+            container.innerHTML = items.slice(0, 5).map((item, index) => `
+                <div class="item-card">
+                    <div class="item-rank">${index + 1}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-stats">
+                            <span><i class="fas fa-shopping-bag"></i> ${item.quantity} sold</span>
+                            <span><i class="fas fa-coins"></i> R${item.revenue.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

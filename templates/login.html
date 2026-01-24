@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zakes Shisanyama - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .left-section {
+            flex: 1;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flame-icon {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            animation: flicker 2s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+        }
+
+        .brand-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 56px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            opacity: 0.95;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 350px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateX(5px);
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            width: 40px;
+            text-align: center;
+            color: #FFD700;
+        }
+
+        .feature-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .right-section {
+            flex: 1;
+            background: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            margin-bottom: 40px;
+        }
+
+        .login-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 42px;
+            color: #8B0000;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .error-message {
+            background: #FFE5E5;
+            color: #C00;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 4px solid #C00;
+            font-size: 14px;
+        }
+
+        .error-message i {
+            margin-right: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8B0000;
+            font-size: 16px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #8B0000;
+            box-shadow: 0 0 0 4px rgba(139,0,0,0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(139,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .demo-accounts {
+            margin-top: 35px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border-left: 4px solid #DC143C;
+        }
+
+        .demo-accounts strong {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #8B0000;
+            margin-bottom: 18px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-accounts strong i {
+            font-size: 16px;
+        }
+
+        .demo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            color: #666;
+            font-size: 13px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .demo-item:last-child {
+            border-bottom: none;
+        }
+
+        .demo-role {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-role i {
+            color: #8B0000;
+            font-size: 14px;
+        }
+
+        .demo-creds {
+            font-family: 'Courier New', monospace;
+            color: #8B0000;
+            background: #fff;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .left-section {
+                padding: 40px;
+            }
+            
+            .brand-name {
+                font-size: 48px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .right-section {
+                padding: 30px;
+            }
+            
+            .login-title {
+                font-size: 36px;
+            }
+            
+            .brand-name {
+                font-size: 40px;
+            }
+
+            .demo-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <div class="logo-section">
+                <svg class="flame-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 C40 30, 35 40, 35 55 C35 70, 40 80, 50 85 C60 80, 65 70, 65 55 C65 40, 60 30, 50 10 Z" 
+                          fill="#FF6B35" stroke="#FF4500" stroke-width="2"/>
+                    <path d="M50 20 C45 35, 42 42, 42 52 C42 62, 45 68, 50 72 C55 68, 58 62, 58 52 C58 42, 55 35, 50 20 Z" 
+                          fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                    <path d="M50 30 C47 40, 46 44, 46 50 C46 56, 47 60, 50 62 C53 60, 54 56, 54 50 C54 44, 53 40, 50 30 Z" 
+                          fill="#FFFFE0"/>
+                </svg>
+                
+                <h1 class="brand-name">EKHAYA AFRICA RESTAURANT</h1>
+                <p class="tagline">Authentic South African Braai</p>
+            </div>
+
+            <div class="features">
+                <div class="feature-item">
+                    <i class="fas fa-drumstick-bite feature-icon"></i>
+                    <div class="feature-text">Premium Quality Meat</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-fire feature-icon"></i>
+                    <div class="feature-text">Traditional Fire Grilling</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <div class="feature-text">Fast & Efficient Service</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <div class="feature-text">Smart Stock Management</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-section">
+            <div class="login-header">
+                <h2 class="login-title">Welcome Back</h2>
+                <p class="login-subtitle">Sign in to access your dashboard</p>
+            </div>
+
+            <div id="errorMessage" class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login to System
+                </button>
+            </form>
+
+            <div class="demo-accounts">
+                <strong>
+                    <i class="fas fa-info-circle"></i>
+                    Demo Accounts
+                </strong>
+                <div class="demo-item">
+                    <span class="demo-role">
+                        <i class="fas fa-cash-register"></i>
+                        Cashier
+                    </span>
+                    <span class="demo-creds">cashier / cash123</span>
+                </div>
+                <div class="demo-item">
+                    <span class="demo-role">
+                        <i class="fas fa-utensils"></i>
+                        Kitchen
+                    </span>
+                    <span class="demo-creds">kitchen / cook123</span>
+                </div>
+                <div class="demo-item">
+                    <span class="demo-role">
+                        <i class="fas fa-user-shield"></i>
+                        Admin
+                    </span>
+                    <span class="demo-creds">admin / admin123</span>
+                </div>
+                <div class="demo-item">
+                    <span class="demo-role">
+                        <i class="fas fa-boxes"></i>
+                        Puncher
+                    </span>
+                    <span class="demo-creds">puncher / stock123</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const loginBtn = document.querySelector('.login-btn');
+
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    errorDiv.style.display = 'none';
+                    loginBtn.innerHTML = '<i class="fas fa-check"></i> Success! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 500);
+                } else {
+                    errorText.textContent = data.message || 'Invalid credentials. Please try again.';
+                    errorDiv.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login to System';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorText.textContent = 'Login failed. Please check your connection and try again.';
+                errorDiv.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login to System';
+            }
+        });
+
+        // Hide error message when user starts typing
+        document.getElementById('username').addEventListener('input', () => {
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+        
+        document.getElementById('password').addEventListener('input', () => {
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

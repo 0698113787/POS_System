@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen - Zakes Shisanyama</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='kitchen.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="brand">
+                <svg class="flame-icon" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M25 5 C20 15, 17.5 20, 17.5 27.5 C17.5 35, 20 40, 25 42.5 C30 40, 32.5 35, 32.5 27.5 C32.5 20, 30 15, 25 5 Z" 
+                          fill="#FF6B35" stroke="#FF4500" stroke-width="1"/>
+                    <path d="M25 10 C22.5 17.5, 21 21, 21 26 C21 31, 22.5 34, 25 36 C27.5 34, 29 31, 29 26 C29 21, 27.5 17.5, 25 10 Z" 
+                          fill="#FFD700"/>
+                </svg>
+                <div>
+                    <h1>ZAKES SHISANYAMA</h1>
+                    <span class="role-badge kitchen">Kitchen Display</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <span class="user-icon">👨‍🍳</span>
+                    <div>
+                        <div class="user-name">{{ session.username }}</div>
+                        <div class="user-role">Kitchen Staff</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="3"/>
+                        <path d="M25 15 L25 25 L32 32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-value" id="pendingCount">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card completed">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="3"/>
+                        <path d="M15 25 L22 32 L35 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Completed Today</div>
+                    <div class="stat-value" id="completedCount">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card time">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="3"/>
+                        <circle cx="25" cy="25" r="3" fill="currentColor"/>
+                        <line x1="25" y1="25" x2="25" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="25" y1="25" x2="35" y2="25" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Current Time</div>
+                    <div class="stat-value" id="currentTime">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="orders-section">
+            <div class="section-header">
+                <h2>🔥 Active Orders</h2>
+                <div class="header-decoration"></div>
+            </div>
+            <div class="orders-grid" id="ordersGrid">
+                <div class="no-orders">
+                    <svg viewBox="0 0 100 100" class="no-orders-icon">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#ddd" stroke-width="3"/>
+                        <path d="M30 50 L45 65 L70 40" fill="none" stroke="#ddd" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <p>No pending orders</p>
+                    <span>Orders will appear here when placed</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="completed-section">
+            <div class="section-header">
+                <h2>✓ Recently Completed</h2>
+                <div class="header-decoration"></div>
+            </div>
+            <div class="completed-list" id="completedList">
+                <div class="no-orders">
+                    <p>No completed orders yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let orders = [];
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                orders = await response.json();
+                displayOrders();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        function displayOrders() {
+            const pendingOrders = orders.filter(order => order.status === 'pending');
+            const completedOrders = orders.filter(order => order.status === 'ready');
+            
+            const ordersGrid = document.getElementById('ordersGrid');
+            if (pendingOrders.length === 0) {
+                ordersGrid.innerHTML = `
+                    <div class="no-orders">
+                        <svg viewBox="0 0 100 100" class="no-orders-icon">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#ddd" stroke-width="3"/>
+                            <path d="M30 50 L45 65 L70 40" fill="none" stroke="#ddd" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                        <p>No pending orders</p>
+                        <span>Orders will appear here when placed</span>
+                    </div>
+                `;
+            } else {
+                ordersGrid.innerHTML = pendingOrders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-number">Order #${order.id}</div>
+                            <div class="order-badge">New</div>
+                        </div>
+                        <div class="order-time">
+                            <svg viewBox="0 0 20 20" class="time-icon">
+                                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M10 6 L10 10 L13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            ${new Date(order.timestamp).toLocaleTimeString()}
+                        </div>
+                        <div class="customer-info">
+                            <span class="customer-icon">👤</span>
+                            <strong>${order.customerName}</strong>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="item-row">
+                                    <span class="item-qty">${item.quantity}×</span>
+                                    <span class="item-name">${item.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-total">
+                                <span>Total:</span>
+                                <strong>R${order.total.toFixed(2)}</strong>
+                            </div>
+                            <div class="ready-time">
+                                Ready: ${new Date(order.readyTime).toLocaleTimeString()}
+                            </div>
+                        </div>
+                        <button class="complete-btn" onclick="completeOrder(${order.id})">
+                            <span>✓</span> Mark as Ready
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            const completedList = document.getElementById('completedList');
+            if (completedOrders.length === 0) {
+                completedList.innerHTML = '<div class="no-orders"><p>No completed orders yet</p></div>';
+            } else {
+                completedList.innerHTML = completedOrders.slice(-5).reverse().map(order => `
+                    <div class="completed-card">
+                        <div class="completed-header">
+                            <span class="completed-number">Order #${order.id}</span>
+                            <span class="completed-customer">👤 ${order.customerName}</span>
+                            <span class="completed-time">${new Date(order.timestamp).toLocaleTimeString()}</span>
+                            <span class="completed-badge">✓ Ready</span>
+                        </div>
+                        <div class="completed-items">
+                            ${order.items.map(item => `${item.quantity}× ${item.name}`).join(', ')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateStats() {
+            const pendingCount = orders.filter(o => o.status === 'pending').length;
+            const completedToday = orders.filter(o => {
+                const orderDate = new Date(o.timestamp).toDateString();
+                const today = new Date().toDateString();
+                return o.status === 'ready' && orderDate === today;
+            }).length;
+            
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('completedCount').textContent = completedToday;
+        }
+
+        async function completeOrder(orderId) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/complete`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadOrders();
+                } else {
+                    alert('Failed to complete order');
+                }
+            } catch (error) {
+                alert('Error completing order: ' + error.message);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        }
+
+        setInterval(loadOrders, 5000);
+        setInterval(updateClock, 1000);
+        
+        loadOrders();
+        updateClock();
+    </script>
+</body>
+</html>

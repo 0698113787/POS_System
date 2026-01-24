@@ -1,0 +1,495 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+}
+
+.header {
+    background: linear-gradient(135deg, #2C3E50 0%, #34495e 100%);
+    color: white;
+    padding: 20px 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.flame-icon {
+    font-size: 40px;
+    color: #FFD700;
+}
+
+.brand h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.role-badge {
+    display: block;
+    font-size: 11px;
+    color: #3498db;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-icon {
+    font-size: 20px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-role {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.back-btn, .logout-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover, .logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: #3498db;
+}
+
+.container {
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.month-selector {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.month-selector h2 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 24px;
+    color: #2C3E50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.month-selector input[type="month"] {
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.month-selector input[type="month"]:focus {
+    outline: none;
+    border-color: #2C3E50;
+}
+
+.load-btn {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #2C3E50 0%, #34495e 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.load-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-left: 5px solid;
+    transition: all 0.3s;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+}
+
+.summary-card.revenue {
+    border-color: #4CAF50;
+}
+
+.summary-card.orders {
+    border-color: #2196F3;
+}
+
+.summary-card.cash {
+    border-color: #FF9800;
+}
+
+.summary-card.card {
+    border-color: #9C27B0;
+}
+
+.summary-card.avg {
+    border-color: #00BCD4;
+}
+
+.summary-card.peak {
+    border-color: #FFC107;
+}
+
+.card-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.summary-card.revenue .card-icon {
+    background: #E8F5E9;
+    color: #4CAF50;
+}
+
+.summary-card.orders .card-icon {
+    background: #E3F2FD;
+    color: #2196F3;
+}
+
+.summary-card.cash .card-icon {
+    background: #FFF3E0;
+    color: #FF9800;
+}
+
+.summary-card.card .card-icon {
+    background: #F3E5F5;
+    color: #9C27B0;
+}
+
+.summary-card.avg .card-icon {
+    background: #E0F7FA;
+    color: #00BCD4;
+}
+
+.summary-card.peak .card-icon {
+    background: #FFF8E1;
+    color: #FFC107;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-label {
+    color: #666;
+    font-size: 11px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.card-value {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Bebas Neue', cursive;
+    color: #333;
+}
+
+.card-subtext {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.card-trend {
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.chart-card h3 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    color: #2C3E50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chart-card canvas {
+    max-height: 300px;
+}
+
+.performers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.performers-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.performers-card h3 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    color: #2C3E50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.performers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.performer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.performer-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.performer-rank {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #2C3E50 0%, #34495e 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    font-family: 'Bebas Neue', cursive;
+    flex-shrink: 0;
+}
+
+.performer-info {
+    flex: 1;
+}
+
+.performer-name {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.performer-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+}
+
+.performer-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.performer-revenue {
+    font-weight: 700;
+    color: #4CAF50;
+}
+
+.comparison-section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.comparison-section h3 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    color: #2C3E50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table thead {
+    background: #f8f9fa;
+}
+
+.comparison-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 700;
+    color: #2C3E50;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.comparison-table td {
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.comparison-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.amount {
+    font-weight: 700;
+    color: #4CAF50;
+    font-size: 15px;
+}
+
+.no-data {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .month-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .performers-grid {
+        grid-template-columns: 1fr;
+    }
+}

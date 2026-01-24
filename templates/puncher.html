@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puncher - Ekhaya Africa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='puncher.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="brand">
+                <svg class="flame-icon" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M25 5 C20 15, 17.5 20, 17.5 27.5 C17.5 35, 20 40, 25 42.5 C30 40, 32.5 35, 32.5 27.5 C32.5 20, 30 15, 25 5 Z" 
+                          fill="#FF6B35" stroke="#FF4500" stroke-width="1"/>
+                    <path d="M25 10 C22.5 17.5, 21 21, 21 26 C21 31, 22.5 34, 25 36 C27.5 34, 29 31, 29 26 C29 21, 27.5 17.5, 25 10 Z" 
+                          fill="#FFD700"/>
+                </svg>
+                <div>
+                    <h1>EKHAYA AFRICA RESTAURANT</h1>
+                    <span class="role-badge puncher">Stock Management</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <span class="user-icon">📦</span>
+                    <div>
+                        <div class="user-name">{{ session.username }}</div>
+                        <div class="user-role">Puncher</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn add" onclick="showAddItemModal()">
+                <span>➕</span> Add New Item
+            </button>
+            <button class="action-btn history" onclick="showStockHistory()">
+                <span>📊</span> Stock History
+            </button>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <button class="filter-btn active" data-category="all">All Items</button>
+            <button class="filter-btn" data-category="Meat">🥩 Meat</button>
+            <button class="filter-btn" data-category="Sides">🍚 Sides</button>
+            <button class="filter-btn" data-category="Drinks">🥤 Drinks</button>
+        </div>
+
+        <!-- Stock Overview -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>📦 Current Stock Levels</h2>
+                <div class="header-decoration"></div>
+            </div>
+            
+            <div class="stock-grid" id="stockGrid">
+                <div class="loading">Loading stock...</div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="section-card alert-section" id="lowStockSection" style="display: none;">
+            <div class="section-header">
+                <h2>⚠️ Low Stock Alert</h2>
+                <div class="header-decoration"></div>
+            </div>
+            <div class="low-stock-list" id="lowStockList"></div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-overlay" onclick="closeAddItemModal()"></div>
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>➕ Add New Menu Item</h2>
+                <button class="modal-close" onclick="closeAddItemModal()">✕</button>
+            </div>
+            <form id="addItemForm" class="modal-form">
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" required placeholder="e.g., Braaied Chicken">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="itemPrice">Price (R)</label>
+                        <input type="number" id="itemPrice" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemStock">Initial Stock</label>
+                        <input type="number" id="itemStock" required placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="itemCategory">Category</label>
+                    <select id="itemCategory" required>
+                        <option value="">Select category</option>
+                        <option value="Meat">Meat</option>
+                        <option value="Sides">Sides</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="itemRequiresSide">
+                        <span class="checkbox-custom"></span>
+                        <span>Requires side selection (Uphuthu/Jeqe)</span>
+                    </label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddItemModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-overlay" onclick="closeEditItemModal()"></div>
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>✏️ Edit Menu Item</h2>
+                <button class="modal-close" onclick="closeEditItemModal()">✕</button>
+            </div>
+            <form id="editItemForm" class="modal-form">
+                <input type="hidden" id="editItemId">
+                
+                <div class="form-group">
+                    <label for="editItemName">Item Name</label>
+                    <input type="text" id="editItemName" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editItemPrice">Price (R)</label>
+                        <input type="number" id="editItemPrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Stock</label>
+                        <input type="text" id="editCurrentStock" readonly class="readonly-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editItemCategory">Category</label>
+                    <select id="editItemCategory" required>
+                        <option value="Meat">Meat</option>
+                        <option value="Sides">Sides</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editItemRequiresSide">
+                        <span class="checkbox-custom"></span>
+                        <span>Requires side selection (Uphuthu/Jeqe)</span>
+                    </label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEditItemModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div id="updateStockModal" class="modal">
+        <div class="modal-overlay" onclick="closeUpdateStockModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 Update Stock</h2>
+                <button class="modal-close" onclick="closeUpdateStockModal()">✕</button>
+            </div>
+            <form id="updateStockForm" class="modal-form">
+                <input type="hidden" id="stockItemId">
+                
+                <div class="stock-info">
+                    <h3 id="stockItemName"></h3>
+                    <p>Current Stock: <strong id="stockCurrentAmount"></strong></p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Update Type</label>
+                    <div class="stock-type-buttons">
+                        <button type="button" class="stock-type-btn active" data-type="add" onclick="selectStockType('add')">
+                            ➕ Add Stock
+                        </button>
+                        <button type="button" class="stock-type-btn" data-type="remove" onclick="selectStockType('remove')">
+                            ➖ Remove Stock
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stockQuantity">Quantity</label>
+                    <input type="number" id="stockQuantity" required min="1" placeholder="Enter quantity">
+                </div>
+                
+                <div class="form-group">
+                    <label for="stockNotes">Notes (Optional)</label>
+                    <textarea id="stockNotes" placeholder="e.g., Weekly restock, Damaged items removed"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeUpdateStockModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stock History Modal -->
+    <div id="stockHistoryModal" class="modal">
+        <div class="modal-overlay" onclick="closeStockHistoryModal()"></div>
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>📊 Stock History</h2>
+                <button class="modal-close" onclick="closeStockHistoryModal()">✕</button>
+            </div>
+            <div class="history-container">
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let menuItems = [];
+        let currentStockType = 'add';
+
+        // Load menu items
+        async function loadMenuItems() {
+            try {
+                const response = await fetch('/api/puncher/menu');
+                menuItems = await response.json();
+                displayStockGrid();
+                checkLowStock();
+            } catch (error) {
+                console.error('Error loading menu items:', error);
+            }
+        }
+
+        // Display stock grid
+        function displayStockGrid() {
+            const grid = document.getElementById('stockGrid');
+            
+            if (menuItems.length === 0) {
+                grid.innerHTML = '<div class="no-items">No menu items yet. Add your first item!</div>';
+                return;
+            }
+            
+            const activeCategory = document.querySelector('.filter-btn.active').dataset.category;
+            const filteredItems = activeCategory === 'all' 
+                ? menuItems 
+                : menuItems.filter(item => item.category === activeCategory);
+            
+            grid.innerHTML = filteredItems.map(item => `
+                <div class="stock-card ${item.stock <= 10 ? 'low-stock' : ''}">
+                    <div class="stock-header">
+                        <span class="stock-category">${item.category}</span>
+                        ${item.stock <= 10 ? '<span class="stock-alert">⚠️ Low</span>' : ''}
+                    </div>
+                    <h3 class="stock-name">${item.name}</h3>
+                    <div class="stock-price">R${item.price.toFixed(2)}</div>
+                    <div class="stock-level">
+                        <div class="stock-label">Stock Level</div>
+                        <div class="stock-amount ${item.stock <= 10 ? 'low' : ''}">${item.stock}</div>
+                    </div>
+                    ${item.requires_side ? '<div class="stock-note">+ Sides required</div>' : ''}
+                    <div class="stock-actions">
+                        <button class="stock-btn update" onclick="showUpdateStockModal(${item.id}, '${item.name}', ${item.stock})">
+                            📦 Update Stock
+                        </button>
+                        <button class="stock-btn edit" onclick="showEditItemModal(${item.id})">
+                            ✏️ Edit
+                        </button>
+                        <button class="stock-btn delete" onclick="deleteItem(${item.id}, '${item.name}')">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Check low stock
+        function checkLowStock() {
+            const lowStockItems = menuItems.filter(item => item.stock <= 10);
+            const section = document.getElementById('lowStockSection');
+            const list = document.getElementById('lowStockList');
+            
+            if (lowStockItems.length > 0) {
+                section.style.display = 'block';
+                list.innerHTML = lowStockItems.map(item => `
+                    <div class="low-stock-item">
+                        <div class="low-stock-info">
+                            <strong>${item.name}</strong>
+                            <span>${item.category}</span>
+                        </div>
+                        <div class="low-stock-amount">${item.stock} left</div>
+                        <button class="restock-btn" onclick="showUpdateStockModal(${item.id}, '${item.name}', ${item.stock})">
+                            Restock
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // Category filter
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                displayStockGrid();
+            });
+        });
+
+        // Add item modal
+        function showAddItemModal() {
+            document.getElementById('addItemModal').style.display = 'flex';
+            document.getElementById('addItemForm').reset();
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('addItemModal').style.display = 'none';
+        }
+
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('itemName').value,
+                price: parseFloat(document.getElementById('itemPrice').value),
+                stock: parseInt(document.getElementById('itemStock').value),
+                category: document.getElementById('itemCategory').value,
+                requiresSide: document.getElementById('itemRequiresSide').checked ? 1 : 0
+            };
+            
+            try {
+                const response = await fetch('/api/puncher/menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeAddItemModal();
+                    loadMenuItems();
+                    alert('Item added successfully!');
+                } else {
+                    alert('Failed to add item');
+                }
+            } catch (error) {
+                alert('Error adding item: ' + error.message);
+            }
+        });
+
+        // Edit item modal
+        function showEditItemModal(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById('editItemId').value = item.id;
+            document.getElementById('editItemName').value = item.name;
+            document.getElementById('editItemPrice').value = item.price;
+            document.getElementById('editCurrentStock').value = item.stock;
+            document.getElementById('editItemCategory').value = item.category;
+            document.getElementById('editItemRequiresSide').checked = item.requires_side === 1;
+            
+            document.getElementById('editItemModal').style.display = 'flex';
+        }
+
+        function closeEditItemModal() {
+            document.getElementById('editItemModal').style.display = 'none';
+        }
+
+        document.getElementById('editItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const itemId = document.getElementById('editItemId').value;
+            const data = {
+                name: document.getElementById('editItemName').value,
+                price: parseFloat(document.getElementById('editItemPrice').value),
+                category: document.getElementById('editItemCategory').value,
+                requiresSide: document.getElementById('editItemRequiresSide').checked ? 1 : 0
+            };
+            
+            try {
+                const response = await fetch(`/api/puncher/menu/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeEditItemModal();
+                    loadMenuItems();
+                    alert('Item updated successfully!');
+                } else {
+                    alert('Failed to update item');
+                }
+            } catch (error) {
+                alert('Error updating item: ' + error.message);
+            }
+        });
+
+        // Update stock modal
+        function showUpdateStockModal(itemId, itemName, currentStock) {
+            document.getElementById('stockItemId').value = itemId;
+            document.getElementById('stockItemName').textContent = itemName;
+            document.getElementById('stockCurrentAmount').textContent = currentStock;
+            document.getElementById('updateStockForm').reset();
+            selectStockType('add');
+            document.getElementById('updateStockModal').style.display = 'flex';
+        }
+
+        function closeUpdateStockModal() {
+            document.getElementById('updateStockModal').style.display = 'none';
+        }
+
+        function selectStockType(type) {
+            currentStockType = type;
+            document.querySelectorAll('.stock-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+        }
+
+        document.getElementById('updateStockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const itemId = document.getElementById('stockItemId').value;
+            const quantity = parseInt(document.getElementById('stockQuantity').value);
+            const notes = document.getElementById('stockNotes').value;
+            
+            const quantityChange = currentStockType === 'add' ? quantity : -quantity;
+            
+            try {
+                const response = await fetch(`/api/puncher/stock/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantityChange, notes })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeUpdateStockModal();
+                    loadMenuItems();
+                    alert('Stock updated successfully!');
+                } else {
+                    alert(result.error || 'Failed to update stock');
+                }
+            } catch (error) {
+                alert('Error updating stock: ' + error.message);
+            }
+        });
+
+        // Delete item
+        async function deleteItem(itemId, itemName) {
+            if (!confirm(`Are you sure you want to delete "${itemName}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/puncher/menu/${itemId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadMenuItems();
+                    alert('Item deleted successfully!');
+                } else {
+                    alert(result.message || 'Failed to delete item');
+                }
+            } catch (error) {
+                alert('Error deleting item: ' + error.message);
+            }
+        }
+
+        // Stock history
+        async function showStockHistory() {
+            try {
+                const response = await fetch('/api/puncher/stock-history');
+                const history = await response.json();
+                
+                const list = document.getElementById('historyList');
+                
+                if (history.length === 0) {
+                    list.innerHTML = '<div class="no-history">No stock history available</div>';
+                } else {
+                    list.innerHTML = history.map(h => `
+                        <div class="history-item ${h.change_type}">
+                            <div class="history-header">
+                                <strong>${h.menu_item_name}</strong>
+                                <span class="history-date">${new Date(h.timestamp).toLocaleString()}</span>
+                            </div>
+                            <div class="history-details">
+                                <span class="history-change ${h.quantity_change > 0 ? 'positive' : 'negative'}">
+                                    ${h.quantity_change > 0 ? '+' : ''}${h.quantity_change}
+                                </span>
+                                <span class="history-stock">
+                                    ${h.stock_before} → ${h.stock_after}
+                                </span>
+                                <span class="history-type">${h.change_type}</span>
+                            </div>
+                            ${h.notes ? `<div class="history-notes">${h.notes}</div>` : ''}
+                            ${h.puncher_name ? `<div class="history-puncher">By: ${h.puncher_name}</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('stockHistoryModal').style.display = 'flex';
+            } catch (error) {
+                alert('Error loading stock history: ' + error.message);
+            }
+        }
+
+        function closeStockHistoryModal() {
+            document.getElementById('stockHistoryModal').style.display = 'none';
+        }
+
+        // Initial load
+        loadMenuItems();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadMenuItems, 30000);
+    </script>
+</body>
+</html>

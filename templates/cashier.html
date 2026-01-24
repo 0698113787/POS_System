@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier - Ekhaya Africa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cashier.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="brand">
+                <svg class="flame-icon" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M25 5 C20 15, 17.5 20, 17.5 27.5 C17.5 35, 20 40, 25 42.5 C30 40, 32.5 35, 32.5 27.5 C32.5 20, 30 15, 25 5 Z" 
+                          fill="#FF6B35" stroke="#FF4500" stroke-width="1"/>
+                    <path d="M25 10 C22.5 17.5, 21 21, 21 26 C21 31, 22.5 34, 25 36 C27.5 34, 29 31, 29 26 C29 21, 27.5 17.5, 25 10 Z" 
+                          fill="#FFD700"/>
+                </svg>
+                <div>
+                    <h1>EKHAYA AFRICA RESTAURANT AND BUTCHERY</h1>
+                    <span class="role-badge">Cashier Station</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <i class="fas fa-user user-icon"></i>
+                    <div>
+                        <div class="user-name">{{ session.username }}</div>
+                        <div class="user-role">Cashier</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="menu-section">
+            <div class="section-header">
+                <h2><i class="fas fa-drumstick-bite"></i> Menu Items</h2>
+                <div class="header-decoration"></div>
+            </div>
+            
+            <div class="category-filter">
+                <button class="filter-btn active" data-category="all">
+                    <i class="fas fa-th"></i> All Items
+                </button>
+                <button class="filter-btn" data-category="Meat">
+                    <i class="fas fa-drumstick-bite"></i> Meat
+                </button>
+                <button class="filter-btn" data-category="Sides">
+                    <i class="fas fa-bowl-rice"></i> Sides
+                </button>
+                <button class="filter-btn" data-category="Drinks">
+                    <i class="fas fa-wine-bottle"></i> Drinks
+                </button>
+            </div>
+
+            <div class="menu-grid" id="menuGrid">
+                {% for item in menu_items %}
+                <div class="menu-item" data-category="{{ item.category }}" data-id="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-requires-side="{{ item.requires_side }}" data-stock="{{ item.stock }}">
+                    <div class="item-header">
+                        <span class="item-category">{{ item.category }}</span>
+                        <span class="item-stock {% if item.stock <= 10 %}low-stock{% endif %}">
+                            <i class="fas fa-box"></i> {{ item.stock }} left
+                        </span>
+                    </div>
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-price">R{{ item.price }}</div>
+                    {% if item.requires_side %}
+                    <div class="item-note">
+                        <i class="fas fa-plus-circle"></i> Uphuthu (R20) or Jeqe (R30)
+                    </div>
+                    {% endif %}
+                    <button class="add-btn" onclick="handleAddToOrder({{ item.id }}, '{{ item.name }}', {{ item.price }}, {{ item.requires_side }}, {{ item.stock }})" {% if item.stock == 0 %}disabled{% endif %}>
+                        <i class="fas fa-cart-plus"></i> {% if item.stock == 0 %}Out of Stock{% else %}Add to Order{% endif %}
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="order-section">
+            <div class="section-header">
+                <h2><i class="fas fa-shopping-cart"></i> Current Order</h2>
+                <div class="header-decoration"></div>
+            </div>
+            
+            <div class="customer-info">
+                <label for="customerName">
+                    <i class="fas fa-user"></i> Customer Name
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="customerName" placeholder="Enter customer name" required>
+                </div>
+            </div>
+
+            <div class="payment-method">
+                <label><i class="fas fa-credit-card"></i> Payment Method</label>
+                <div class="payment-options">
+                    <label class="radio-option">
+                        <input type="radio" name="paymentMethod" value="cash" checked>
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">
+                            <i class="fas fa-money-bill-wave payment-icon"></i>
+                            Cash
+                        </span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="paymentMethod" value="card">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">
+                            <i class="fas fa-credit-card payment-icon"></i>
+                            Card
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="order-items" id="orderItems">
+                <div class="empty-order">
+                    <i class="fas fa-shopping-basket empty-icon"></i>
+                    <p>No items added yet</p>
+                    <span>Start by selecting items from the menu</span>
+                </div>
+            </div>
+
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">R0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Amount</span>
+                    <span id="total">R0.00</span>
+                </div>
+            </div>
+
+            <div class="order-actions">
+                <button class="clear-btn" onclick="clearOrder()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                <button class="place-order-btn" onclick="placeOrder()">
+                    <i class="fas fa-check"></i> Place Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Selection Modal -->
+    <div id="sideModal" class="modal">
+        <div class="modal-overlay" onclick="closeSideModal()"></div>
+        <div class="modal-content side-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-bowl-rice"></i> Add Sides? (Optional)</h2>
+                <p id="meatItemName"></p>
+                <span class="optional-note">
+                    <i class="fas fa-info-circle"></i> You can choose to add sides or just order the meat alone
+                </span>
+            </div>
+            <div class="side-options-checkboxes">
+                <label class="checkbox-option">
+                    <input type="checkbox" id="sideUphuthu" value="Uphuthu">
+                    <span class="checkbox-custom"></span>
+                    <div class="checkbox-content">
+                        <i class="fas fa-wheat-awn side-icon"></i>
+                        <div class="side-name">Uphuthu</div>
+                        <div class="side-desc">Traditional maize meal</div>
+                        <div class="side-price">+R20</div>
+                    </div>
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" id="sideJeqe" value="Jeqe">
+                    <span class="checkbox-custom"></span>
+                    <div class="checkbox-content">
+                        <i class="fas fa-bread-slice side-icon"></i>
+                        <div class="side-name">Jeqe</div>
+                        <div class="side-desc">Steamed bread</div>
+                        <div class="side-price">+R30</div>
+                    </div>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-confirm-btn" onclick="confirmSideSelection()">
+                    <i class="fas fa-check"></i> Add to Order
+                </button>
+                <button class="modal-cancel-btn" onclick="closeSideModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Order Placed Successfully!</h2>
+            <p id="orderDetails"></p>
+            <button class="modal-btn" onclick="closeModal()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let orderItems = [];
+        let pendingMeatItem = null;
+        let sidePrices = { 'Uphuthu': 20, 'Jeqe': 30 }; // Default prices
+        let menuItemsData = {}; // Store menu items data including stock
+        
+        // Load menu items data into memory
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                const id = parseInt(item.dataset.id);
+                menuItemsData[id] = {
+                    id: id,
+                    name: item.dataset.name,
+                    price: parseFloat(item.dataset.price),
+                    requiresSide: item.dataset.requiresSide === '1',
+                    stock: parseInt(item.dataset.stock)
+                };
+            });
+        });
+        
+        // Fetch side prices from backend
+        async function fetchSidePrices() {
+            try {
+                const response = await fetch('/api/side-prices');
+                const prices = await response.json();
+                sidePrices = prices;
+                console.log('Side prices loaded:', sidePrices);
+            } catch (error) {
+                console.error('Error loading side prices:', error);
+            }
+        }
+        
+        // Load side prices on page load
+        fetchSidePrices();
+
+        // Refresh menu to get updated stock levels
+        async function refreshMenu() {
+            try {
+                const response = await fetch('/api/menu');
+                const items = await response.json();
+                
+                // Update stock display and button states
+                items.forEach(item => {
+                    const menuItem = document.querySelector(`.menu-item[data-id="${item.id}"]`);
+                    if (menuItem) {
+                        const stockSpan = menuItem.querySelector('.item-stock');
+                        const addBtn = menuItem.querySelector('.add-btn');
+                        
+                        stockSpan.innerHTML = `<i class="fas fa-box"></i> ${item.stock} left`;
+                        stockSpan.classList.toggle('low-stock', item.stock <= 10);
+                        
+                        if (item.stock === 0) {
+                            addBtn.disabled = true;
+                            addBtn.innerHTML = '<i class="fas fa-ban"></i> Out of Stock';
+                        } else {
+                            addBtn.disabled = false;
+                            addBtn.innerHTML = '<i class="fas fa-cart-plus"></i> Add to Order';
+                        }
+                        
+                        // Update stored data
+                        menuItemsData[item.id].stock = item.stock;
+                    }
+                });
+            } catch (error) {
+                console.error('Error refreshing menu:', error);
+            }
+        }
+
+        // Category filter
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                const items = document.querySelectorAll('.menu-item');
+                
+                items.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        function handleAddToOrder(id, name, price, requiresSide, stock) {
+            // Check stock availability
+            if (stock <= 0) {
+                alert('This item is out of stock!');
+                return;
+            }
+            
+            if (requiresSide) {
+                // Show side selection modal for optional sides
+                pendingMeatItem = { id, name, price };
+                document.getElementById('meatItemName').textContent = name;
+                
+                // Reset checkboxes
+                document.getElementById('sideUphuthu').checked = false;
+                document.getElementById('sideJeqe').checked = false;
+                
+                document.getElementById('sideModal').style.display = 'flex';
+            } else {
+                // Add directly without side selection
+                addToOrder(id, name, price, []);
+            }
+        }
+
+        function confirmSideSelection() {
+            if (pendingMeatItem) {
+                const selectedSides = [];
+                
+                if (document.getElementById('sideUphuthu').checked) {
+                    selectedSides.push('Uphuthu');
+                }
+                if (document.getElementById('sideJeqe').checked) {
+                    selectedSides.push('Jeqe');
+                }
+                
+                addToOrder(
+                    pendingMeatItem.id, 
+                    pendingMeatItem.name, 
+                    pendingMeatItem.price, 
+                    selectedSides
+                );
+                closeSideModal();
+            }
+        }
+
+        function closeSideModal() {
+            document.getElementById('sideModal').style.display = 'none';
+            pendingMeatItem = null;
+        }
+
+        function addToOrder(id, name, basePrice, sides) {
+            // Check stock before adding
+            const availableStock = menuItemsData[id]?.stock || 0;
+            const itemInOrder = orderItems.find(item => item.id === id);
+            const currentOrderQty = itemInOrder ? itemInOrder.quantity : 0;
+            
+            if (currentOrderQty >= availableStock) {
+                alert(`Cannot add more. Only ${availableStock} in stock!`);
+                return;
+            }
+            
+            // Calculate total price with sides
+            let totalPrice = basePrice;
+            if (sides && sides.length > 0) {
+                sides.forEach(side => {
+                    totalPrice += sidePrices[side] || 0;
+                });
+            }
+            
+            // Create a unique key for this item combination
+            const sidesKey = sides.length > 0 ? sides.sort().join(',') : 'none';
+            
+            const existingItem = orderItems.find(item => 
+                item.id === id && item.sidesKey === sidesKey
+            );
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                orderItems.push({ 
+                    id, 
+                    name, 
+                    basePrice: basePrice,  // Store base price
+                    price: totalPrice,     // Store total price (base + sides)
+                    quantity: 1, 
+                    sides: sides,
+                    sidesKey: sidesKey
+                });
+            }
+            
+            updateOrderDisplay();
+        }
+
+        function removeFromOrder(index) {
+            orderItems.splice(index, 1);
+            updateOrderDisplay();
+        }
+
+        function updateQuantity(index, change) {
+            const item = orderItems[index];
+            const newQuantity = item.quantity + change;
+            
+            // Check stock availability
+            const availableStock = menuItemsData[item.id]?.stock || 0;
+            
+            if (newQuantity > availableStock) {
+                alert(`Cannot add more. Only ${availableStock} in stock!`);
+                return;
+            }
+            
+            if (newQuantity <= 0) {
+                removeFromOrder(index);
+            } else {
+                item.quantity = newQuantity;
+                updateOrderDisplay();
+            }
+        }
+
+        function updateOrderDisplay() {
+            const orderContainer = document.getElementById('orderItems');
+            
+            if (orderItems.length === 0) {
+                orderContainer.innerHTML = `
+                    <div class="empty-order">
+                        <i class="fas fa-shopping-basket empty-icon"></i>
+                        <p>No items added yet</p>
+                        <span>Start by selecting items from the menu</span>
+                    </div>
+                `;
+                document.getElementById('subtotal').textContent = 'R0.00';
+                document.getElementById('total').textContent = 'R0.00';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            orderItems.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                let displayName = item.name;
+                let priceBreakdown = `R${item.basePrice}`;
+                
+                if (item.sides && item.sides.length > 0) {
+                    const sidesText = item.sides.map(side => {
+                        const sidePrice = sidePrices[side] || 0;
+                        return `${side} (+R${sidePrice})`;
+                    }).join(' + ');
+                    displayName += ` <small>(with ${sidesText})</small>`;
+                    priceBreakdown = `R${item.price} <small>(base R${item.basePrice})</small>`;
+                }
+                
+                html += `
+                    <div class="order-item">
+                        <div class="order-item-info">
+                            <div class="order-item-name">${displayName}</div>
+                            <div class="order-item-price">${priceBreakdown} × ${item.quantity}</div>
+                        </div>
+                        <div class="order-item-actions">
+                            <button class="qty-btn" onclick="updateQuantity(${index}, -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="qty">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${index}, 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="remove-btn" onclick="removeFromOrder(${index})">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                        <div class="order-item-total">R${itemTotal.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            orderContainer.innerHTML = html;
+            document.getElementById('subtotal').textContent = `R${total.toFixed(2)}`;
+            document.getElementById('total').textContent = `R${total.toFixed(2)}`;
+        }
+
+        function clearOrder() {
+            if (confirm('Are you sure you want to clear this order?')) {
+                orderItems = [];
+                document.getElementById('customerName').value = '';
+                document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
+                updateOrderDisplay();
+            }
+        }
+
+        async function placeOrder() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            if (!customerName) {
+                alert('Please enter customer name');
+                return;
+            }
+            
+            if (orderItems.length === 0) {
+                alert('Please add items to the order');
+                return;
+            }
+            
+            const total = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Format items for backend
+            const formattedItems = orderItems.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,  // Total price with sides included
+                quantity: item.quantity,
+                side_option: item.sides && item.sides.length > 0 ? item.sides.join(' + ') : null
+            }));
+            
+            const orderData = {
+                customerName: customerName,
+                items: formattedItems,
+                total: total,
+                paymentMethod: paymentMethod
+            };
+            
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const paymentIcon = paymentMethod === 'cash' 
+                        ? '<i class="fas fa-money-bill-wave"></i>' 
+                        : '<i class="fas fa-credit-card"></i>';
+                    const paymentText = paymentMethod === 'cash' ? 'Cash' : 'Card';
+                    
+                    document.getElementById('orderDetails').innerHTML = `
+                        <strong>Order #${result.order.id}</strong><br>
+                        Customer: ${result.order.customer_name}<br>
+                        Total: R${result.order.total.toFixed(2)}<br>
+                        Payment: ${paymentIcon} ${paymentText}<br>
+                        Status: Sent to Kitchen<br>
+                        Ready Time: ${new Date(result.order.ready_time).toLocaleTimeString()}
+                    `;
+                    document.getElementById('successModal').style.display = 'flex';
+                    
+                    // Clear order
+                    orderItems = [];
+                    document.getElementById('customerName').value = '';
+                    document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
+                    updateOrderDisplay();
+                    
+                    // Refresh menu to get updated stock levels
+                    setTimeout(refreshMenu, 500);
+                } else {
+                    alert('Failed to place order: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error placing order: ' + error.message);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+        
+        // Auto-refresh stock every 30 seconds
+        setInterval(refreshMenu, 30000);
+    </script>
+</body>
+</html>
