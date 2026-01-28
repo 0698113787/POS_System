@@ -4,7 +4,7 @@ A comprehensive Point of Sale (POS) system built for a traditional South African
 
 ## 🎯 Live Demo
 
-**[View Live Application](#)** _(https://pos-system-1-sb2v.onrender.com)_
+**[View Live Application](_(https://pos-system-1-sb2v.onrender.com)_)**
 
 ### Demo Credentials
 
